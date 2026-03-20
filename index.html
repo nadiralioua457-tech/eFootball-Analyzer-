@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚽ eFootball Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            font-family: 'Arial', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: #222;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 255, 0, 0.1);
+            border: 2px solid #00ff00;
+        }
+        
+        h1 {
+            color: #00ff00;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 24px;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            color: #fff;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #00ff00;
+            border-radius: 8px;
+            background: #1a1a1a;
+            color: #00ff00;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            background: #00ff00;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background: #00dd00;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 255, 0, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            display: none;
+            border-left: 4px solid #00ff00;
+        }
+        
+        .results.show {
+            display: block;
+            animation: slideIn 0.3s ease-in;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result-item {
+            color: #00ff00;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #333;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .result-label {
+            color: #888;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        
+        .result-value {
+            color: #00ff00;
+            font-weight: bold;
+            font-size: 18px;
+            margin-top: 5px;
+        }
+        
+        .recommendation {
+            background: rgba(0, 255, 0, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #00ff00;
+        }
+        
+        .recommendation-text {
+            color: #00ff00;
+            font-weight: bold;
+        }
+        
+        .error {
+            background: #ff3333;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            margin-bottom: 20px;
+        }
+        
+        .error.show {
+            display: block;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+            
+            input, button {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚽ eFootball Analyzer</h1>
+        
+        <div class="error" id="error"></div>
+        
+        <div class="form-group">
+            <label for="totalPlayers">عدد لاعبي الحزمة الإجمالي:</label>
+            <input type="number" id="totalPlayers" value="150" min="1">
+        </div>
+        
+        <div class="form-group">
+            <label for="iconicPlayers">عدد اللاعبين الأيقونيين:</label>
+            <input type="number" id="iconicPlayers" value="3" min="1">
+        </div>
+        
+        <div class="form-group">
+            <label for="attempts">عدد المحاولات:</label>
+            <input type="number" id="attempts" value="10" min="1">
+        </div>
+        
+        <button onclick="calculate()">حساب الاحتمالية</button>
+        
+        <div class="results" id="results">
+            <div class="result-item">
+                <div class="result-label">احتمالية السحب الواحد</div>
+                <div class="result-value" id="singleProb">-</div>
+            </div>
+            
+            <div class="result-item">
+                <div class="result-label">احتمالية الحصول على الأقل على لاعب واحد</div>
+                <div class="result-value" id="probAtLeastOne">-</div>
+            </div>
+            
+            <div class="result-item">
+                <div class="result-label">عدد المحاولات المتوقع</div>
+                <div class="result-value" id="expectedAttempts">-</div>
+            </div>
+            
+            <div class="result-item">
+                <div class="result-label">التكلفة الإجمالية (100 عملة لكل سحب)</div>
+                <div class="result-value" id="totalCost">-</div>
+            </div>
+            
+            <div class="result-item">
+                <div class="result-label">التكلفة المتوقعة</div>
+                <div class="result-value" id="expectedCost">-</div>
+            </div>
+            
+            <div class="recommendation">
+                <div class="result-label">التوصية:</div>
+                <div class="recommendation-text" id="recommendation">-</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function calculate() {
+            const errorDiv = document.getElementById('error');
+            errorDiv.classList.remove('show');
+            
+            try {
+                const total = parseInt(document.getElementById('totalPlayers').value);
+                const iconic = parseInt(document.getElementById('iconicPlayers').value);
+                const attempts = parseInt(document.getElementById('attempts').value);
+                
+                if (total <= 0 || iconic <= 0 || attempts <= 0) {
+                    throw new Error('جميع القيم يجب أن تكون أكبر من صفر!');
+                }
+                
+                if (iconic > total) {
+                    throw new Error('عدد اللاعبين الأيقونيين لا يمكن أن يكون أكثر من الإجمالي!');
+                }
+                
+                // الحسابات
+                const singleProb = iconic / total;
+                const probAtLeastOne = 1 - Math.pow(1 - singleProb, attempts);
+                const expectedAttempts = 1 / singleProb;
+                const totalCost = attempts * 100;
+                const expectedCost = Math.round(expectedAttempts * 100);
+                const recommendedAttempts = Math.round(expectedAttempts * 1.5);
+                
+                // عرض النتائج
+                document.getElementById('singleProb').textContent = (singleProb * 100).toFixed(2) + '%';
+                document.getElementById('probAtLeastOne').textContent = (probAtLeastOne * 100).toFixed(2) + '%';
+                document.getElementById('expectedAttempts').textContent = Math.round(expectedAttempts) + ' محاولة';
+                document.getElementById('totalCost').textContent = totalCost.toLocaleString() + ' عملة';
+                document.getElementById('expectedCost').textContent = expectedCost.toLocaleString() + ' عملة';
+                document.getElementById('recommendation').textContent = `سحب ${recommendedAttempts} مرة للحصول على أفضل الفرص!`;
+                
+                document.getElementById('results').classList.add('show');
+                
+            } catch (error) {
+                errorDiv.textContent = '❌ ' + error.message;
+                errorDiv.classList.add('show');
+                document.getElementById('results').classList.remove('show');
+            }
+        }
+        
+        // سماح بالضغط على Enter
+        document.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                calculate();
+            }
+        });
+    </script>
+</body>
+  </html>
